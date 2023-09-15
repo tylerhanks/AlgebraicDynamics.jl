@@ -55,11 +55,31 @@ struct DelayUndirectedSystem{T} <: AbstractUndirectedSystem{T}
   portmap
 end
 
+
 nstates(system::AbstractUndirectedSystem) = system.nstates 
 dynamics(system::AbstractUndirectedSystem) = system.dynamics 
 portmap(system::AbstractUndirectedSystem) = system.portmap 
 portfunction(system::AbstractUndirectedSystem) = FinFunction(portmap(system), nstates(system))
 exposed_states(system::AbstractUndirectedSystem, u::AbstractVector) = getindex(u, portmap(system))
+
+
+#=struct ParaUndirectedSystem{T}
+  nstates::Int
+  get_dynamics::Function
+  #dynamics::Function 
+  portmap
+end
+
+nstates(para_system::ParaUndirectedSystem) = para_system.nstates
+dynamics(para_system::ParaUndirectedSystem, x::Vector) = para_system.get_dynamics(x)
+portmap(system::ParaUndirectedSystem) = system.portmap 
+portfunction(system::ParaUndirectedSystem) = FinFunction(portmap(system), nstates(system))
+exposed_states(system::ParaUndirectedSystem, u::AbstractVector) = getindex(u, portmap(system))=#
+
+
+
+
+
 
 """    ResourceSharer{T}
     ResourceSharer{T,N}
@@ -278,6 +298,20 @@ function oapply(d::AbstractUWD, xs::Vector{R}, S′::Pushout) where {R <: Abstra
         length(apex(S′)), 
         v, 
         compose(outer_junction_map, junction_map).func)
+end
+
+oapply(d::AbstractUWD, xs::Vector{ParaUndirectedSystem}) =
+  oapply(d, xs, inducted_states(d, xs))
+
+function oapply(d::AbstractUWD, xs::Vector{ParaUndirectedSystem}, Sp::Pushout)
+    
+    S = coproduct((FinSet∘nstates).(xs))
+    states(b::Int) = legs(S)[b].func
+
+
+
+
+
 end
 
 
